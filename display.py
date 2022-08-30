@@ -12,12 +12,12 @@ class Reversi:
         Label(self.Principal_Window,text='Seleccione color: ').pack()
         # Color 
         # 0: para vacio
-        # 1: para blancas
-        # -1: para negras
+        # 1: para AMARILLAS
+        # -1: para AZULES
         self.Color =IntVar()
         self.Color.set(1)
-        Radiobutton(self.Principal_Window,text='Blancas',variable=self.Color,value=1).pack()
-        Radiobutton(self.Principal_Window,text='Negras',variable=self.Color,value=-1).pack()
+        Radiobutton(self.Principal_Window,text='AMARILLAS',variable=self.Color,value=1).pack()
+        Radiobutton(self.Principal_Window,text='AZULES',variable=self.Color,value=-1).pack()
         Label(self.Principal_Window,text='Seleccione modo de juego: ').pack()
         self.GameMode =IntVar()
         self.GameMode.set(1) # MODIFICAR AL IMPLEMENTAR IA
@@ -42,24 +42,23 @@ class Reversi:
         Button(self.Principal_Window,text='INICIAR JUEGO',command=lambda:self.init_game()).pack(pady=10)
 
     def init_game(self):
-           
         self.Game_Window = Toplevel()
         self.Game_Window.title("Reversi")
         #self.Game_Window.eval('tk::PlaceWindow . center')
         self.boxes=[]
         self.List_Boxes=[0]*(self.Board_Size.get()**2)
-        self.Black_Piece=PhotoImage(file="blue_piece.gif")
-        self.White_Piece=PhotoImage(file="yellow_piece.gif")
+        self.Blue_Piece=PhotoImage(file="blue_piece.gif")
+        self.Yellow_Piece=PhotoImage(file="yellow_piece.gif")
         self.Empty_space=PhotoImage(file="empty_space.gif")
         # self.juego=aisearch.JuegoGato()
         for i in range(self.Board_Size.get()):
             l=[]
             for j in range(self.Board_Size.get()):
                 if (i==self.Board_Size.get()/2 and j==self.Board_Size.get()/2) or (i==(self.Board_Size.get()/2)-1 and j==(self.Board_Size.get()/2)-1):
-                    b1=Button(self.Game_Window,image=self.White_Piece,width="80",height="80")
+                    b1=Button(self.Game_Window,image=self.Yellow_Piece,width="80",height="80")
                     self.List_Boxes[i*self.Board_Size.get()+j]=1
                 elif(i==self.Board_Size.get()/2 and j==(self.Board_Size.get()/2)-1) or (i==(self.Board_Size.get()/2)-1 and j== self.Board_Size.get()/2):
-                    b1=Button(self.Game_Window,image=self.Black_Piece,width="80",height="80")
+                    b1=Button(self.Game_Window,image=self.Blue_Piece,width="80",height="80")
                     self.List_Boxes[i*self.Board_Size.get()+j]=-1
                 else:
                     b1=Button(self.Game_Window,image=self.Empty_space,width="80",height="80")
@@ -71,13 +70,17 @@ class Reversi:
             self.boxes.append(l)
         self.def_pos()
         self.def_edge()
+        self.who_is_playing()
+
+    def who_is_playing(self):
         if self.Color.get()==1:
-            print('JUEGAN LAS BLANCAS')
+            print('JUEGAN LAS AMARILLAS')
+            self.printListBoxes()
             print(self.possible_moves(self.Color.get()))     
         else:
-            print('JUEGAN LAS NEGRAS')
+            print('JUEGAN LAS AZULES')
+            self.printListBoxes()
             print(self.possible_moves(self.Color.get())) 
-        
 
     def def_pos(self):
         # 8 posiciones
@@ -132,7 +135,7 @@ class Reversi:
                 return self.recursive_look_direction(pos+dir,dir,color)
 
     def eatable(self,pos,dir,color):
-        if pos+dir <0 and pos+dir >=36: #fail verification
+        if pos+dir <0 and pos+dir >=(self.Board_Size.get()**2)-1: #fail verification
             return -1
         if (self.List_Boxes[pos+dir]==-1*color): #Donde tengo un color contrario adyacente
             p=self.recursive_look_direction(pos+dir,dir,color)
@@ -152,62 +155,75 @@ class Reversi:
         return list_pm        
 
     def recursive_get_direction(self,pos,dir,color):
+        if(self.List_Boxes[pos+dir]==color):
+            return [pos]
         if(self.List_Boxes[pos+dir]==-1*color):
-            self.list_pos_to_change.append(pos+dir)
-            return self.recursive_get_direction(pos+dir,dir,color)
+            return [pos]+self.recursive_get_direction(pos+dir,dir,color)
         else:
-            return 
+            return []
+
+    def changeable(self,pos,dir,color):
+        if ((pos+dir) <0) or ((pos+dir) >=((self.Board_Size.get()**2)-1)):
+                return []
+        if self.List_Boxes[pos+dir] == -1*color:
+            change=self.recursive_get_direction(pos+dir,dir,color)
+            return change
+        else:
+            return []
 
     def change_color_eaten(self, pos, color):
-        self.list_pos_to_change=[]
-        
+        list_pos_to_change=[]
         for i in self.Edge_Exceptions(pos):
-            #print(i+pos)
-            #print(self.Edge_Exceptions(i+pos))
-            if ((i+pos) <0) or ((i+pos) >((self.Board_Size.get()**2)-1)):
-                continue
+            box_to_change= self.changeable(pos,i,color)
+            if len(box_to_change)!= 0:
+                list_pos_to_change=list_pos_to_change+box_to_change
+        for i in list_pos_to_change:
+            if self.Color.get()==1:
+                self.boxes[self.conv_pos(i)[0]][self.conv_pos(i)[1]].config(image=self.Yellow_Piece)
+                self.List_Boxes[i]=1
             else:
-                #print('aa?')
-                #print('tue ',self.List_Boxes[i+pos])
-                if self.List_Boxes[i+pos] == -1*color:
-                    self.list_pos_to_change.append(i+pos)
-                    self.recursive_get_direction(i+pos,pos,color)
-        for i in self.list_pos_to_change:
-            
-            print(self.list_pos_to_change)
+                self.boxes[self.conv_pos(i)[0]][self.conv_pos(i)[1]].config(image=self.Blue_Piece)
+                self.List_Boxes[i]=-1
 
+    def conv_pos(self,pos):
+        return[pos//self.Board_Size.get(),pos%self.Board_Size.get()]
+        
     def click(self,event):
         if self.List_Boxes[event.widget.x*self.Board_Size.get()+event.widget.y] ==0:
-            #print(self.boxes[4][4])
             if self.Color.get()==1:
-                
-                if event.widget.x*self.Board_Size.get()+event.widget.y in self.possible_moves(1):
-                    self.change_color_eaten(event.widget.x*self.Board_Size.get()+event.widget.y,1)
-                    event.widget['image'] = self.White_Piece
-                    #self.boxes[3][3].config(image=self.Empty_space)
-                    #self.boxes[3][3]= self.Empty_space
-                    #buttons[row-1][col-1].config(text='Foo')
+                if event.widget.x*self.Board_Size.get()+event.widget.y not in self.possible_moves(self.Color.get()):
+                    print('JUGADA INVALIDA')
+                    print(self.possible_moves(self.Color.get()))
+                if len(self.possible_moves(self.Color.get()))==0:
+                    print('AMARILLAS NO TIENEN JUGADAS')
+                    self.Color.set(-1)
+                    self.who_is_playing()
+                    
+                if event.widget.x*self.Board_Size.get()+event.widget.y in self.possible_moves(self.Color.get()):
+                    self.change_color_eaten(event.widget.x*self.Board_Size.get()+event.widget.y,self.Color.get())
+                    event.widget['image'] = self.Yellow_Piece
                     self.List_Boxes[event.widget.x*self.Board_Size.get()+event.widget.y]=1
                     self.Color.set(-1)
-                    print('JUEGAN LAS NEGRAS')
-                if len(self.possible_moves(1))==0:
-                    print('BLANCAS NO TIENEN JUGADAS')
-                else:
-                    print('JUGADA INVALIDA')
-                    print(self.possible_moves(1))
-            else:
+                    self.who_is_playing()
                 
-                if event.widget.x*self.Board_Size.get()+event.widget.y in self.possible_moves(-1):
-                    event.widget['image'] = self.Black_Piece
-                    self.List_Boxes[event.widget.x*self.Board_Size.get()+event.widget.y]=-1
+            else:
+                if event.widget.x*self.Board_Size.get()+event.widget.y not in self.possible_moves(self.Color.get()):
+                    print('JUGADA INVALIDA N')
+                    print(self.possible_moves(self.Color.get()))
+                if len(self.possible_moves(self.Color.get()))==0:
+                    print('AZULES NO TIENEN JUGADAS')
                     self.Color.set(1)
-                    print('JUEGAN LAS BLANCAS') 
-                if len(self.possible_moves(-1))==0:
-                    print('NEGRAS NO TIENEN JUGADAS')
-                else:
-                    print('JUGADA INVALIDA')
-                    print(self.possible_moves(-1))
-        self.printListBoxes()
+                    self.who_is_playing()
+                if event.widget.x*self.Board_Size.get()+event.widget.y in self.possible_moves(self.Color.get()):
+                
+                    self.change_color_eaten(event.widget.x*self.Board_Size.get()+event.widget.y,self.Color.get())
+                    event.widget['image'] = self.Blue_Piece
+                    self.List_Boxes[event.widget.x*self.Board_Size.get()+event.widget.y]=-1
+                    
+                    self.Color.set(1)
+                    self.who_is_playing()
+                
+        
         #print(self.boxes)
         #print(list(np.where(np.array(self.List_Boxes) == 1)[0]))
 
