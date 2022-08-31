@@ -18,6 +18,14 @@ class Reversi:
         self.Color.set(1)
         Radiobutton(self.Principal_Window,text='AMARILLAS',variable=self.Color,value=1).pack()
         Radiobutton(self.Principal_Window,text='AZULES',variable=self.Color,value=-1).pack()
+        Label(self.Principal_Window,text='Seleccione color: ').pack()
+        # Color del Tema 
+        # 0: Normal
+        # 1: Crypto
+        self.Theme =IntVar()
+        self.Theme.set(0)
+        Radiobutton(self.Principal_Window,text='NORMAL',variable=self.Theme,value=0).pack()
+        Radiobutton(self.Principal_Window,text='CRYPTO',variable=self.Theme,value=1).pack()
         Label(self.Principal_Window,text='Seleccione modo de juego: ').pack()
         self.GameMode =IntVar()
         self.GameMode.set(1) # MODIFICAR AL IMPLEMENTAR IA
@@ -47,18 +55,25 @@ class Reversi:
         #self.Game_Window.eval('tk::PlaceWindow . center')
         self.boxes=[]
         self.List_Boxes=[0]*(self.Board_Size.get()**2)
-        self.Blue_Piece=PhotoImage(file="blue_piece.gif")
-        self.Yellow_Piece=PhotoImage(file="yellow_piece.gif")
-        self.Empty_space=PhotoImage(file="empty_space.gif")
+        if self.Theme.get() ==0:
+            self.B_Piece=PhotoImage(file="black_piece.gif")
+            self.W_Piece=PhotoImage(file="white_piece.gif")
+            self.Empty_space=PhotoImage(file="wood_space.gif")
+            self.Full_Space=PhotoImage(file='full_wood_space.gif')
+        else:
+            self.B_Piece=PhotoImage(file="blue_piece.gif")
+            self.W_Piece=PhotoImage(file="yellow_piece.gif")
+            self.Empty_space=PhotoImage(file="empty_space.gif")
+            self.Full_Space=PhotoImage(file='full_space.gif')
         # self.juego=aisearch.JuegoGato()
         for i in range(self.Board_Size.get()):
             l=[]
             for j in range(self.Board_Size.get()):
                 if (i==self.Board_Size.get()/2 and j==self.Board_Size.get()/2) or (i==(self.Board_Size.get()/2)-1 and j==(self.Board_Size.get()/2)-1):
-                    b1=Button(self.Game_Window,image=self.Yellow_Piece,width="80",height="80")
+                    b1=Button(self.Game_Window,image=self.W_Piece,width="80",height="80")
                     self.List_Boxes[i*self.Board_Size.get()+j]=1
                 elif(i==self.Board_Size.get()/2 and j==(self.Board_Size.get()/2)-1) or (i==(self.Board_Size.get()/2)-1 and j== self.Board_Size.get()/2):
-                    b1=Button(self.Game_Window,image=self.Blue_Piece,width="80",height="80")
+                    b1=Button(self.Game_Window,image=self.B_Piece,width="80",height="80")
                     self.List_Boxes[i*self.Board_Size.get()+j]=-1
                 else:
                     b1=Button(self.Game_Window,image=self.Empty_space,width="80",height="80")
@@ -88,10 +103,10 @@ class Reversi:
         self.der=1
         self.arr=-1*self.Board_Size.get()
         self.aba=self.Board_Size.get()
-        self.dia=-1*(self.Board_Size.get()+1) #diagonal izquierda arriba
-        self.dib=self.Board_Size.get()+1 #diagonal izquierda abajo
-        self.dda=-1*(self.Board_Size.get()-1) #diagonal derecha arriba
-        self.ddb=self.Board_Size.get()-1 #diagonal derecha abajo
+        self.dia=-1*(self.Board_Size.get()-1) #diagonal izquierda arriba
+        self.dib=self.Board_Size.get()-1 #diagonal izquierda abajo
+        self.dda=-1*(self.Board_Size.get()+1) #diagonal derecha arriba
+        self.ddb=self.Board_Size.get()+1 #diagonal derecha abajo
 
     def def_edge(self):
         self.Top_Egde = [i for i in range(1,self.Board_Size.get()-1)]
@@ -107,40 +122,47 @@ class Reversi:
         if pos == self.Board_Size.get()-1: #Second_Corner 
             return [self.izq,self.dib,self.aba]
         if pos == (self.Board_Size.get()-1)*self.Board_Size.get():#Third_Corner =
-            return [self.arr,self.dda,self.der] 
+            return [self.arr,self.dia,self.der] 
         if pos == (self.Board_Size.get()**2)-1:#Fourth_Corner = 
-            return [self.izq,self.dia,self.arr]
+            return [self.izq,self.dda,self.arr]
         if pos in self.Top_Egde:# Top_Egde = 
             return [self.izq,self.ddb,self.aba,self.dib,self.der]
         if pos in self.Bottom_Egde: #Bottom_Egde = 
             return [self.izq,self.dia,self.arr,self.dda,self.der]
         if pos in self.Left_Edge: #Left_Edge = 
-            return [self.arr,self.dda,self.der,self.dib,self.aba]
+            return [self.arr,self.dia,self.der,self.ddb,self.aba]
         if pos in self.Right_Egde: #Right_Egde = 
-            return [self.arr,self.dia,self.izq,self.ddb,self.aba]
+            return [self.arr,self.dda,self.izq,self.dib,self.aba]
         else:
             return [self.dia,self.arr,self.dda,self.der,self.dib,self.aba,self.ddb,self.izq]
 
     def recursive_look_direction(self,pos, dir,color):
-    # return -1 si no puede en esa direcion
+        if pos+dir <0 or pos+dir >=(self.Board_Size.get()**2)-1: #fail verification
+            return -1
+        #if pos+dir in self.Edge_Positions and (dir not in self.Edge_Exceptions(pos+dir)):
+            #return -1
         if(self.List_Boxes[pos+dir]==0):
             return pos+dir
         if(self.List_Boxes[pos+dir]==color):
             #se revisa en la sig
             return -1
         else: # entonces es el color contrario
-            if pos+dir in self.Edge_Positions: #si llega al borde 
-                return -1
-            else:
-                return self.recursive_look_direction(pos+dir,dir,color)
+            #if pos+dir in self.Edge_Positions: #si llega al borde 
+            #    return -1
+            #else:
+            return self.recursive_look_direction(pos+dir,dir,color)
 
     def eatable(self,pos,dir,color):
-        if pos+dir <0 and pos+dir >=(self.Board_Size.get()**2)-1: #fail verification
+        if pos+dir <0 or pos+dir >(self.Board_Size.get()**2)-1: #fail verification
             return -1
+        #if pos+dir in self.Edge_Positions: #si llega al borde 
+            #return -1
         if (self.List_Boxes[pos+dir]==-1*color): #Donde tengo un color contrario adyacente
             p=self.recursive_look_direction(pos+dir,dir,color)
             if p!=-1:
                 return p
+            else:
+                return -1
         else: #tengo 0 adyacente
             return -1
 
@@ -148,26 +170,41 @@ class Reversi:
         list_pm=[]
         for i in list(np.where(np.array(self.List_Boxes) == color)[0]):
             for j in self.Edge_Exceptions(i):
-                
                 pm=self.eatable(i,j,color)
-                if pm !=-1:
+                #print(i,j,pm) 
+                if pm !=-1 and pm not in list_pm:
                     list_pm.append(pm)
         return list_pm        
 
     def recursive_get_direction(self,pos,dir,color):
+        print(pos+dir,self.List_Boxes[pos+dir])
+        if ((pos+dir) <0) or ((pos+dir) >=((self.Board_Size.get()**2)-1)):
+            return []
+        #if dir not in self.Edge_Exceptions(pos+dir):
+           # return [-1]
         if(self.List_Boxes[pos+dir]==color):
             return [pos]
-        if(self.List_Boxes[pos+dir]==-1*color):
+        if(self.List_Boxes[pos+dir]==-1*color) and(self.List_Boxes[pos+dir] not in self.Edge_Positions):
             return [pos]+self.recursive_get_direction(pos+dir,dir,color)
         else:
-            return []
+            if self.List_Boxes[pos+dir]==0:
+                return [-1]
+            if self.List_Boxes[pos+dir] in self.Edge_Positions:
+                return [-1]
+            else:
+                return []
 
     def changeable(self,pos,dir,color):
         if ((pos+dir) <0) or ((pos+dir) >=((self.Board_Size.get()**2)-1)):
                 return []
+        
         if self.List_Boxes[pos+dir] == -1*color:
             change=self.recursive_get_direction(pos+dir,dir,color)
-            return change
+            print(change)
+            if -1 in change:
+                return []
+            else:
+                return change
         else:
             return []
 
@@ -175,14 +212,15 @@ class Reversi:
         list_pos_to_change=[]
         for i in self.Edge_Exceptions(pos):
             box_to_change= self.changeable(pos,i,color)
+            print(pos, pos+i, box_to_change)
             if len(box_to_change)!= 0:
                 list_pos_to_change=list_pos_to_change+box_to_change
         for i in list_pos_to_change:
             if self.Color.get()==1:
-                self.boxes[self.conv_pos(i)[0]][self.conv_pos(i)[1]].config(image=self.Yellow_Piece)
+                self.boxes[self.conv_pos(i)[0]][self.conv_pos(i)[1]].config(image=self.W_Piece)
                 self.List_Boxes[i]=1
             else:
-                self.boxes[self.conv_pos(i)[0]][self.conv_pos(i)[1]].config(image=self.Blue_Piece)
+                self.boxes[self.conv_pos(i)[0]][self.conv_pos(i)[1]].config(image=self.B_Piece)
                 self.List_Boxes[i]=-1
 
     def conv_pos(self,pos):
@@ -201,7 +239,7 @@ class Reversi:
                     
                 if event.widget.x*self.Board_Size.get()+event.widget.y in self.possible_moves(self.Color.get()):
                     self.change_color_eaten(event.widget.x*self.Board_Size.get()+event.widget.y,self.Color.get())
-                    event.widget['image'] = self.Yellow_Piece
+                    event.widget['image'] = self.W_Piece
                     self.List_Boxes[event.widget.x*self.Board_Size.get()+event.widget.y]=1
                     self.Color.set(-1)
                     self.who_is_playing()
@@ -217,15 +255,11 @@ class Reversi:
                 if event.widget.x*self.Board_Size.get()+event.widget.y in self.possible_moves(self.Color.get()):
                 
                     self.change_color_eaten(event.widget.x*self.Board_Size.get()+event.widget.y,self.Color.get())
-                    event.widget['image'] = self.Blue_Piece
+                    event.widget['image'] = self.B_Piece
                     self.List_Boxes[event.widget.x*self.Board_Size.get()+event.widget.y]=-1
                     
                     self.Color.set(1)
                     self.who_is_playing()
-                
-        
-        #print(self.boxes)
-        #print(list(np.where(np.array(self.List_Boxes) == 1)[0]))
 
     def printListBoxes(self):
         for i in range(self.Board_Size.get()):
