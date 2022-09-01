@@ -137,7 +137,7 @@ class Reversi:
             return [self.dia,self.arr,self.dda,self.der,self.dib,self.aba,self.ddb,self.izq]
 
     def recursive_look_direction(self,pos, dir,color):
-        if pos+dir <0 or pos+dir >=(self.Board_Size.get()**2)-1: #fail verification
+        if (pos+dir <0) or (pos+dir >(self.Board_Size.get()**2)): #fail verification
             return -1
         #if pos+dir in self.Edge_Positions and (dir not in self.Edge_Exceptions(pos+dir)):
             #return -1
@@ -153,7 +153,7 @@ class Reversi:
             return self.recursive_look_direction(pos+dir,dir,color)
 
     def eatable(self,pos,dir,color):
-        if pos+dir <0 or pos+dir >(self.Board_Size.get()**2)-1: #fail verification
+        if pos+dir <0 or pos+dir >(self.Board_Size.get()**2): #fail verification
             return -1
         #if pos+dir in self.Edge_Positions: #si llega al borde 
             #return -1
@@ -171,20 +171,23 @@ class Reversi:
         for i in list(np.where(np.array(self.List_Boxes) == color)[0]):
             for j in self.Edge_Exceptions(i):
                 pm=self.eatable(i,j,color)
-                #print(i,j,pm) 
+                print("movimientos posibles")
+                print("pos: ",i,"look_dir: ",i+j,"resp: ",pm) 
                 if pm !=-1 and pm not in list_pm:
                     list_pm.append(pm)
         return list_pm        
 
     def recursive_get_direction(self,pos,dir,color):
-        print(pos+dir,self.List_Boxes[pos+dir])
-        if ((pos+dir) <0) or ((pos+dir) >=((self.Board_Size.get()**2)-1)):
+        
+        if ((pos+dir) <0) or ((pos+dir) >(self.Board_Size.get()**2)):
             return []
         #if dir not in self.Edge_Exceptions(pos+dir):
            # return [-1]
+        print(pos+dir,self.List_Boxes[pos+dir])
         if(self.List_Boxes[pos+dir]==color):
             return [pos]
-        if(self.List_Boxes[pos+dir]==-1*color) and(self.List_Boxes[pos+dir] not in self.Edge_Positions):
+        if(self.List_Boxes[pos+dir]==-1*color)and dir in self.Edge_Exceptions(pos+dir):
+        # and(self.List_Boxes[pos+dir] not in self.Edge_Positions):
             return [pos]+self.recursive_get_direction(pos+dir,dir,color)
         else:
             if self.List_Boxes[pos+dir]==0:
@@ -195,7 +198,7 @@ class Reversi:
                 return []
 
     def changeable(self,pos,dir,color):
-        if ((pos+dir) <0) or ((pos+dir) >=((self.Board_Size.get()**2)-1)):
+        if ((pos+dir) <0) or ((pos+dir) >=(self.Board_Size.get()**2)):
                 return []
         
         if self.List_Boxes[pos+dir] == -1*color:
@@ -212,7 +215,8 @@ class Reversi:
         list_pos_to_change=[]
         for i in self.Edge_Exceptions(pos):
             box_to_change= self.changeable(pos,i,color)
-            print(pos, pos+i, box_to_change)
+            print("fichas a comer")
+            print("pos: ",pos, "pos_a_diri: ",pos+i,"se cambian las pos: ", box_to_change)
             if len(box_to_change)!= 0:
                 list_pos_to_change=list_pos_to_change+box_to_change
         for i in list_pos_to_change:
