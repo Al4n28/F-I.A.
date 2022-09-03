@@ -332,11 +332,11 @@ class Reversi:
                 if event.widget.x*self.Board_Size.get()+event.widget.y not in self.possible_moves(self.Color.get()):
                     print('JUGADA INVALIDA N')
                     print(self.possible_moves(self.Color.get()))
-                if not self.possible_moves(self.Color.get()):
+                elif not self.possible_moves(self.Color.get()):
                     print('NEGRAS NO TIENEN JUGADAS')
                     self.Color.set(1)
                     self.who_is_playing()
-                if event.widget.x*self.Board_Size.get()+event.widget.y in self.possible_moves(self.Color.get()):
+                elif event.widget.x*self.Board_Size.get()+event.widget.y in self.possible_moves(self.Color.get()):
                 
                     self.change_color(event.widget.x*self.Board_Size.get()+event.widget.y,self.Color.get())
                     event.widget['image'] = self.B_Piece
@@ -349,7 +349,7 @@ class Reversi:
             self.check_win_condition()
 
     def check_win_condition(self):
-        if self.List_Boxes.count(0)==0:
+        if self.List_Boxes.count(0)==0 or ((len(self.possible_moves(1))==0) and (len(self.possible_moves(-1))==0)):
             if self.Count_White>self.Count_Black:
                 messagebox.showinfo("REVERSI", "GANAN LAS BLANCAS!")
             elif self.Count_White<self.Count_Black:
