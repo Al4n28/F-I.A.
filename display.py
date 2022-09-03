@@ -224,6 +224,8 @@ class Reversi:
                 elif self.List_Boxes[pos+dir]==0:
                     return pos+dir
                 #elif (self.List_Boxes[pos+dir]==-1*color) :}
+                elif dir in self.Edge_Exceptions(pos+dir):
+                    return self.recursive_look(pos+dir,dir,color)
                 else:
                     return -1
             else:
@@ -263,6 +265,8 @@ class Reversi:
                     return [-1]
                 elif self.List_Boxes[pos+dir]==color:
                     return [pos]
+                elif dir in self.Edge_Exceptions(pos+dir):
+                    return [pos]+self.recursive_color(pos+dir,dir,color)
                 else:
                     return [-1]#[pos]+self.recursive_color(pos+dir,dir,color)
             else:
