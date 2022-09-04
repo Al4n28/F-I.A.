@@ -55,6 +55,7 @@ class Reversi:
         #self.Game_Window.eval('tk::PlaceWindow . center')
         self.boxes=[]
         self.List_Boxes=[0]*(self.Board_Size.get()**2)
+        
         if self.Theme.get() ==0:
             self.B_Piece=PhotoImage(file="black_piece.gif")
             self.W_Piece=PhotoImage(file="white_piece.gif")
@@ -86,8 +87,13 @@ class Reversi:
         self.def_pos()
         self.def_edge()
         self.who_is_playing()
-        
+        print(self.Edge_Positions)
+
     def who_is_playing(self):
+        etiqueta= Label(self.Game_Window,text="piezas Blancas: " + str(self.List_Boxes.count(1)))
+        etiqueta.place(x=0, y=0, width=100, height=20)
+        etiqueta= Label(self.Game_Window,text="piezas Negras: " + str(self.List_Boxes.count(-1)))
+        etiqueta.place(x=100, y=0, width=100, height=20)
         if self.Color.get()==1:
             print('JUEGAN LAS BLANCAS')
             self.printListBoxes()
@@ -96,6 +102,7 @@ class Reversi:
             print('JUEGAN LAS NEGRAS')
             self.printListBoxes()
             print(self.possible_moves(self.Color.get())) 
+
 
     def def_pos(self):
         # 8 posiciones
@@ -136,83 +143,6 @@ class Reversi:
         else:
             return [self.dia,self.arr,self.dda,self.der,self.ddb,self.aba,self.dib,self.izq]
 
-    # def recursive_look_direction(self,pos, dir,color):
-    #     if ((pos+dir) <0) or ((pos+dir) >(self.Board_Size.get()**2)): #fail verification
-    #         return -1
-    #     elif(self.List_Boxes[pos+dir]==0):
-    #         return pos+dir
-    #     elif(self.List_Boxes[pos+dir]==color):
-    #         #se revisa en la sig
-    #         return -1
-    #     else: # entonces es el color contrario
-    #         if (pos+dir in self.Edge_Positions): #si llega al borde 
-    #             return -1
-    #         else:
-    #             return self.recursive_look_direction(pos+dir,dir,color)
-
-    # def eatable(self,pos,dir,color):
-    #     if pos+dir <0 or pos+dir >(self.Board_Size.get()**2): #fail verification
-    #         return -1
-    #     elif (self.List_Boxes[pos+dir]==-1*color):
-    #         #and(self.List_Boxes[pos+dir] not in self.Edge_Positions): #Donde tengo un color contrario adyacente
-    #         p=self.recursive_look_direction(pos+dir,dir,color)
-    #         if p!=-1:
-    #             return p
-    #         else:
-    #             return -1
-    #     else: #tengo 0 adyacente
-    #         return -1
-
-    # def possible_moves(self,color):
-    #     list_pm=[]
-    #     for i in list(np.where(np.array(self.List_Boxes) == color)[0]):
-    #         for j in self.Edge_Exceptions(i):
-    #             pm=self.eatable(i,j,color)
-    #             if pm !=-1 and pm not in list_pm:
-    #                 list_pm.append(pm)
-    #     return list_pm        
-
-    # def recursive_get_direction(self,pos,dir,color):
-    #     if ((pos+dir) <0) or ((pos+dir) >(self.Board_Size.get()**2)):
-    #         return []
-    #     elif(self.List_Boxes[pos+dir]==color):
-    #         return [pos]
-    #     elif(self.List_Boxes[pos+dir]==-1*color)and(self.List_Boxes[pos+dir] not in self.Edge_Positions):
-    #         return [pos]+self.recursive_get_direction(pos+dir,dir,color)
-    #     else:
-    #         if self.List_Boxes[pos+dir]==0:
-    #             return [-1]
-    #         if self.List_Boxes[pos+dir] in self.Edge_Positions:
-    #             return [-1]
-    #         else:
-    #             return []
-
-    # def changeable(self,pos,dir,color):
-    #     if ((pos+dir) <0) or ((pos+dir) >=(self.Board_Size.get()**2)):
-    #             return []
-    #     elif self.List_Boxes[pos+dir] == -1*color:
-    #         change=self.recursive_get_direction(pos+dir,dir,color)
-    #         if -1 in change:
-    #             return []
-    #         else:
-    #             return change
-    #     else:
-    #         return []
-
-    # def change_color_eaten(self, pos, color):
-        # list_pos_to_change=[]
-        # for i in self.Edge_Exceptions(pos):
-        #     box_to_change= self.changeable(pos,i,color)
-        #     if len(box_to_change)!= 0:
-        #         list_pos_to_change=list_pos_to_change+box_to_change
-        # for i in list_pos_to_change:
-        #     if self.Color.get()==1:
-        #         self.boxes[self.conv_pos(i)[0]][self.conv_pos(i)[1]].config(image=self.W_Piece)
-        #         self.List_Boxes[i]=1
-        #     else:
-        #         self.boxes[self.conv_pos(i)[0]][self.conv_pos(i)[1]].config(image=self.B_Piece)
-        #         self.List_Boxes[i]=-1
-
     def conv_pos(self,pos):
         return[pos//self.Board_Size.get(),pos%self.Board_Size.get()]
     
@@ -240,15 +170,13 @@ class Reversi:
             #print('OUT OF RANGE LOOK')
             return -1
         
-
     def possible_moves(self,color):
         possible_moves_list=[]
         for i in list(np.where(np.array(self.List_Boxes) == color)[0]):
              for j in self.Edge_Exceptions(i):
-                # assert (i+j)<0, 'posicion negativa' # assert x >= 0, 'x is less than zero'
-                # assert (i+j)>(self.Board_Size.get()**2), 'posicion mayor '
-                #print(i,j)
-                if self.List_Boxes[i+j]==0 or self.List_Boxes[i+j]==color:#or (i+j) in self.Edge_Positions:
+                if (i+j) in self.Edge_Positions and j not in self.Edge_Exceptions(i+j):
+                    continue
+                elif self.List_Boxes[i+j]==0 or self.List_Boxes[i+j]==color:#or (i+j) in self.Edge_Positions:
                     continue
                 else:
                     pm=self.recursive_look(i+j,j,color)
@@ -280,7 +208,6 @@ class Reversi:
             #print('OUT OF RANGE COLOR')
             return [-1]
         
-
     def change_color(self,pos,color):
         cc_list=[]
         for i in self.Edge_Exceptions(pos):
@@ -312,36 +239,32 @@ class Reversi:
         if self.List_Boxes[event.widget.x*self.Board_Size.get()+event.widget.y] ==0:
             print('JUGADA ---->  ', event.widget.x*self.Board_Size.get()+event.widget.y)
             if self.Color.get()==1:
-                if event.widget.x*self.Board_Size.get()+event.widget.y not in self.possible_moves(self.Color.get()):
-                    print('JUGADA INVALIDA')
-                    print(self.possible_moves(self.Color.get()))# crear metodo para que no calcule de nuevo todo
-                elif not self.possible_moves(self.Color.get()):
+                if not self.possible_moves(self.Color.get()):
                     print('BLANCAS NO TIENEN JUGADAS')
                     self.Color.set(-1)
                     self.who_is_playing()
-                    
+                elif event.widget.x*self.Board_Size.get()+event.widget.y not in self.possible_moves(self.Color.get()):
+                    print('JUGADA INVALIDA')
+                    print(self.possible_moves(self.Color.get()))# crear metodo para que no calcule de nuevo todo
                 elif event.widget.x*self.Board_Size.get()+event.widget.y in self.possible_moves(self.Color.get()):
                     self.change_color(event.widget.x*self.Board_Size.get()+event.widget.y,self.Color.get())
                     event.widget['image'] = self.W_Piece
                     self.List_Boxes[event.widget.x*self.Board_Size.get()+event.widget.y]=1
                     self.Color.set(-1)
                     self.who_is_playing()
-                
             #elif self.Color.get()==-1:
             else:
-                if event.widget.x*self.Board_Size.get()+event.widget.y not in self.possible_moves(self.Color.get()):
-                    print('JUGADA INVALIDA N')
-                    print(self.possible_moves(self.Color.get()))
-                elif not self.possible_moves(self.Color.get()):
+                if not self.possible_moves(self.Color.get()):
                     print('NEGRAS NO TIENEN JUGADAS')
                     self.Color.set(1)
                     self.who_is_playing()
+                elif event.widget.x*self.Board_Size.get()+event.widget.y not in self.possible_moves(self.Color.get()):
+                    print('JUGADA INVALIDA N')
+                    print(self.possible_moves(self.Color.get()))
                 elif event.widget.x*self.Board_Size.get()+event.widget.y in self.possible_moves(self.Color.get()):
-                
                     self.change_color(event.widget.x*self.Board_Size.get()+event.widget.y,self.Color.get())
                     event.widget['image'] = self.B_Piece
                     self.List_Boxes[event.widget.x*self.Board_Size.get()+event.widget.y]=-1
-                    
                     self.Color.set(1)
                     self.who_is_playing()
             self.Count_White = self.List_Boxes.count(1)
