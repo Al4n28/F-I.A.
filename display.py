@@ -1,7 +1,8 @@
+from cProfile import label
 from tkinter import *
 from tkinter import messagebox
 import numpy as np
-class Reversi:
+class UI_Reversi:
 
     def __init__(self):
         self.Principal_Window = Tk()
@@ -12,12 +13,12 @@ class Reversi:
         Label(self.Principal_Window,text='Seleccione color: ').pack()
         # Color 
         # 0: para vacio
-        # 1: para AMARILLAS
-        # -1: para AZULES
+        # 1: para BLANCAS
+        # -1: para NEGRAS
         self.Color =IntVar()
         self.Color.set(1)
-        Radiobutton(self.Principal_Window,text='AMARILLAS',variable=self.Color,value=1).pack()
-        Radiobutton(self.Principal_Window,text='AZULES',variable=self.Color,value=-1).pack()
+        Radiobutton(self.Principal_Window,text='BLANCAS',variable=self.Color,value=1).pack()
+        Radiobutton(self.Principal_Window,text='NEGRAS',variable=self.Color,value=-1).pack()
         Label(self.Principal_Window,text='Seleccione color: ').pack()
         # Color del Tema 
         # 0: Normal
@@ -55,7 +56,13 @@ class Reversi:
         #self.Game_Window.eval('tk::PlaceWindow . center')
         self.boxes=[]
         self.List_Boxes=[0]*(self.Board_Size.get()**2)
-        
+        #self.Game_Window.resizable(0, 0)
+        #self.Game_Window.columnconfigure(0, weight=1)
+        #self.Game_Window.columnconfigure(1, weight=1)
+        self.def_pos()
+        self.def_edge()
+        self.grid_edge()
+        self.Space=PhotoImage(file="space.gif")
         if self.Theme.get() ==0:
             self.B_Piece=PhotoImage(file="black_piece.gif")
             self.W_Piece=PhotoImage(file="white_piece.gif")
@@ -67,33 +74,45 @@ class Reversi:
             self.Empty_space=PhotoImage(file="empty_space.gif")
             self.Full_Space=PhotoImage(file='full_space.gif')
         # self.juego=aisearch.JuegoGato()
-        for i in range(self.Board_Size.get()):
+
+        #Label(self.Game_Window,text='Seleccione color: ', width=80, height=80).grid(row=0,column=0)
+        #Label(self.Game_Window,text='').grid(row=8,column=8)
+        for i in range(self.Board_Size.get()+2):
             l=[]
-            for j in range(self.Board_Size.get()):
-                if (i==self.Board_Size.get()/2 and j==self.Board_Size.get()/2) or (i==(self.Board_Size.get()/2)-1 and j==(self.Board_Size.get()/2)-1):
-                    b1=Button(self.Game_Window,image=self.W_Piece,width="80",height="80")
-                    self.List_Boxes[i*self.Board_Size.get()+j]=1
-                elif(i==self.Board_Size.get()/2 and j==(self.Board_Size.get()/2)-1) or (i==(self.Board_Size.get()/2)-1 and j== self.Board_Size.get()/2):
-                    b1=Button(self.Game_Window,image=self.B_Piece,width="80",height="80")
-                    self.List_Boxes[i*self.Board_Size.get()+j]=-1
+            for j in range(self.Board_Size.get()+2):
+                if (i*(self.Board_Size.get()+2)+j) in self.Edge_Positions_grid:
+                    b=Label(self.Game_Window, width="2", height="2")
+                    b.x=(i)
+                    b.y=(j)
+                    b.grid(row=i,column=j)
                 else:
-                    b1=Button(self.Game_Window,image=self.Empty_space,width="80",height="80")
-                b1.bind("<Button-1>",self.click)
-                b1.x=i
-                b1.y=j
-                b1.grid(row=i,column=j)
-                l.append(b1)
-            self.boxes.append(l)
-        self.def_pos()
-        self.def_edge()
+                    if (i==(self.Board_Size.get()+2)/2 and j==(self.Board_Size.get()+2)/2) or (i==((self.Board_Size.get()+2)/2)-1 and j==((self.Board_Size.get()+2)/2)-1):
+                        b1=Button(self.Game_Window,image=self.W_Piece,width="80",height="80")
+                        self.List_Boxes[(i-1)*(self.Board_Size.get())+(j-1)]=1
+                    elif(i==(self.Board_Size.get()+2)/2 and j==((self.Board_Size.get()+2)/2)-1) or (i==((self.Board_Size.get()+2)/2)-1 and j== (self.Board_Size.get()+2)/2):
+                        b1=Button(self.Game_Window,image=self.B_Piece,width="80",height="80")
+                        self.List_Boxes[(i-1)*(self.Board_Size.get())+(j-1)]=-1
+                    else:
+                        b1=Button(self.Game_Window,image=self.Empty_space,width="80",height="80")
+                    
+                    b1.bind("<Button-1>",self.click)
+                    b1.x=(i-1)
+                    b1.y=(j-1)
+                    b1.grid(row=i,column=j)
+                    l.append(b1)
+            if l:
+                self.boxes.append(l)
+        Label(self.Game_Window, width="2", height="2",text= "blanca").grid(row=0,column=3)
+
+       
         self.who_is_playing()
-        print(self.Edge_Positions)
+        #print(self.Edge_Positions)
 
     def who_is_playing(self):
-        etiqueta= Label(self.Game_Window,text="piezas Blancas: " + str(self.List_Boxes.count(1)))
-        etiqueta.place(x=0, y=0, width=100, height=20)
-        etiqueta= Label(self.Game_Window,text="piezas Negras: " + str(self.List_Boxes.count(-1)))
-        etiqueta.place(x=100, y=0, width=100, height=20)
+        # etiqueta= Label(self.Game_Window,text="piezas Blancas: " + str(self.List_Boxes.count(1)))
+        # etiqueta.place(x=0, y=0, width=100, height=20)
+        # etiqueta= Label(self.Game_Window,text="piezas Negras: " + str(self.List_Boxes.count(-1)))
+        # etiqueta.place(x=100, y=0, width=100, height=20)
         if self.Color.get()==1:
             print('JUEGAN LAS BLANCAS')
             self.printListBoxes()
@@ -102,7 +121,6 @@ class Reversi:
             print('JUEGAN LAS NEGRAS')
             self.printListBoxes()
             print(self.possible_moves(self.Color.get())) 
-
 
     def def_pos(self):
         # 8 posiciones
@@ -115,12 +133,24 @@ class Reversi:
         self.dda=-1*(self.Board_Size.get()-1) #diagonal derecha arriba
         self.ddb=self.Board_Size.get()+1 #diagonal derecha abajo
 
+    def grid_edge(self):
+        Top_Egde_grid = [i for i in range(1,(self.Board_Size.get()+2)-1)]
+        Bottom_Egde_grid = [i for i in range((self.Board_Size.get()+2)*((self.Board_Size.get()+2)-1)+1,((self.Board_Size.get()+2)**2)-1)]
+        Left_Edge_grid = [i for i in range((self.Board_Size.get()+2),(self.Board_Size.get()+2)*((self.Board_Size.get()+2)-1),(self.Board_Size.get()+2))]
+        Right_Egde_grid = [i for i in range((self.Board_Size.get()+2)+((self.Board_Size.get()+2)-1),((self.Board_Size.get()+2)**2)-1,(self.Board_Size.get()+2))]
+        Corners_grid = [0]+[(self.Board_Size.get()+2)-1]+[((self.Board_Size.get()+2)-1)*(self.Board_Size.get()+2)]+[((self.Board_Size.get()+2)**2)-1]
+        self.Edge_Positions_grid = Top_Egde_grid+Bottom_Egde_grid+Left_Edge_grid+Right_Egde_grid+Corners_grid
+        #print(sorted(self.Edge_Positions_grid))
+
     def def_edge(self):
         self.Top_Egde = [i for i in range(1,self.Board_Size.get()-1)]
         self.Bottom_Egde = [i for i in range(self.Board_Size.get()*(self.Board_Size.get()-1)+1,(self.Board_Size.get()**2)-1)]
         self.Left_Edge = [i for i in range(self.Board_Size.get(),self.Board_Size.get()*(self.Board_Size.get()-1),self.Board_Size.get())]
         self.Right_Egde = [i for i in range(self.Board_Size.get()+(self.Board_Size.get()-1),(self.Board_Size.get()**2)-1,self.Board_Size.get())]
-        self.Edge_Positions = [0]+self.Top_Egde+[self.Board_Size.get()-1]+self.Left_Edge+self.Right_Egde+[(self.Board_Size.get()-1)*self.Board_Size.get()]+self.Bottom_Egde+[(self.Board_Size.get()**2)-1]
+        self.Corners = [0]+[self.Board_Size.get()-1]+[(self.Board_Size.get()-1)*self.Board_Size.get()]+[(self.Board_Size.get()**2)-1]
+        self.Edge_Positions = self.Corners+self.Top_Egde+self.Left_Edge+self.Right_Egde+self.Bottom_Egde
+        #print(self.Corners)
+        #print(self.Edge_Positions)
 
     def Edge_Exceptions(self,pos):
          #LAS 8 EXCEPCIONES
@@ -234,7 +264,7 @@ class Reversi:
                 else:
                     self.boxes[self.conv_pos(i)[0]][self.conv_pos(i)[1]].config(image=self.B_Piece)
                     self.List_Boxes[i]=-1
-
+                #print(self.conv_pos(i)[0],self.conv_pos(i)[1])
     def click(self,event):
         if self.List_Boxes[event.widget.x*self.Board_Size.get()+event.widget.y] ==0:
             print('JUGADA ---->  ', event.widget.x*self.Board_Size.get()+event.widget.y)
@@ -288,5 +318,5 @@ class Reversi:
                 print(self.List_Boxes[i*self.Board_Size.get()+j],end=' ')
             print()
 
-game= Reversi()
+game= UI_Reversi()
 mainloop()
