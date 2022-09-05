@@ -1,4 +1,3 @@
-from cProfile import label
 from tkinter import *
 from tkinter import messagebox
 import numpy as np
@@ -55,6 +54,7 @@ class UI_Reversi:
         self.Game_Window.title("Reversi")
         #self.Game_Window.eval('tk::PlaceWindow . center')
         self.boxes=[]
+        
         self.List_Boxes=[0]*(self.Board_Size.get()**2)
         #self.Game_Window.resizable(0, 0)
         #self.Game_Window.columnconfigure(0, weight=1)
@@ -107,6 +107,19 @@ class UI_Reversi:
        
         self.who_is_playing()
         #print(self.Edge_Positions)
+
+    def Eval_(self):
+        self.Eval_Funtion=0
+        for i in range(len(self.List_Boxes)):
+            if self.List_Boxes[i] ==0:
+                continue
+            if i in self.Corners:
+                self.Eval_Funtion += self.List_Boxes[i]*3
+            if i in (self.Top_Egde or self.Bottom_Egde or self.Left_Edge or self.Right_Egde):
+                self.Eval_Funtion += self.List_Boxes[i]*2
+            else:
+                self.Eval_Funtion += self.List_Boxes[i]
+        print(self.Eval_Funtion)
 
     def who_is_playing(self):
         # etiqueta= Label(self.Game_Window,text="piezas Blancas: " + str(self.List_Boxes.count(1)))
@@ -300,6 +313,7 @@ class UI_Reversi:
             self.Count_White = self.List_Boxes.count(1)
             self.Count_Black = self.List_Boxes.count(-1)
             self.check_win_condition()
+            self.Eval_()
 
     def check_win_condition(self):
         if self.List_Boxes.count(0)==0 or ((len(self.possible_moves(1))==0) and (len(self.possible_moves(-1))==0)):
