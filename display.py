@@ -96,17 +96,44 @@ class UI_Reversi:
                         b1=Button(self.Game_Window,image=self.Empty_space,width="80",height="80")
                     
                     b1.bind("<Button-1>",self.click)
+                    b1.bind("<Enter>",self.change)
+                    b1.bind("<Leave>", self.change_back)#(self.conv_pos(i)[0],self.conv_pos(i)[1],self.boxes))
                     b1.x=(i-1)
                     b1.y=(j-1)
                     b1.grid(row=i,column=j)
                     l.append(b1)
             if l:
                 self.boxes.append(l)
-        Label(self.Game_Window, width="2", height="2",text= "blanca").grid(row=0,column=3)
+        #Label(self.Game_Window, width="2", height="2",text= "blanca").grid(row=0,column=3)
+        #for i in self.possible_moves(self.Color.get()):
+            #pos = self.conv_pos(i)
+            #my_label = self.boxes[self.conv_pos(i)[0]][self.conv_pos(i)[1]]
+            #btest= self.boxes[self.conv_pos(i)[0]][self.conv_pos(i)[1]]  
+            #btest.bind("<Enter>", self.change(self.conv_pos(i)[0],self.conv_pos(i)[1],self.boxes))         
+            #my_label.pack(pady=20)
 
+            #my_label.bind("<Enter>", self.change(pos[0],pos[1],self.boxes))
+            #my_label.bind("<Leave>", self.change_back(pos[0],pos[1],self.boxes))
        
         self.who_is_playing()
         #print(self.Edge_Positions)
+
+    def change(self,event):
+        #my_pic= PhotoImage(file="full_wood_space.gif",width="75",height="75")
+        if event.widget.x*self.Board_Size.get()+event.widget.y in self.possible_moves(self.Color.get()):
+            self.boxes[self.conv_pos(event.widget.x*self.Board_Size.get()+event.widget.y)[0]][self.conv_pos(event.widget.x*self.Board_Size.get()+event.widget.y)[1]].config(image=self.Full_Space)        #matriz[x][y].config(image=my_pic)
+            self.boxes[self.conv_pos(event.widget.x*self.Board_Size.get()+event.widget.y)[0]][self.conv_pos(event.widget.x*self.Board_Size.get()+event.widget.y)[1]].image=self.Full_Space
+        #matriz[x][y].image=my_pic
+
+
+    def  change_back(self,event):
+        #my_pic= PhotoImage(file="wood_space.gif",width="75",height="75")
+        if event.widget.x*self.Board_Size.get()+event.widget.y in self.possible_moves(self.Color.get()):
+            self.boxes[self.conv_pos(event.widget.x*self.Board_Size.get()+event.widget.y)[0]][self.conv_pos(event.widget.x*self.Board_Size.get()+event.widget.y)[1]].config(image=self.Empty_space)        #matriz[x][y].config(image=my_pic)
+            self.boxes[self.conv_pos(event.widget.x*self.Board_Size.get()+event.widget.y)[0]][self.conv_pos(event.widget.x*self.Board_Size.get()+event.widget.y)[1]].image=self.Empty_space
+        
+        #matriz[x][y].config(image=my_pic)
+        #matriz[x][y].image=my_pic
 
     def Eval_(self):
         self.Eval_Funtion=0
@@ -310,6 +337,14 @@ class UI_Reversi:
                     self.List_Boxes[event.widget.x*self.Board_Size.get()+event.widget.y]=-1
                     self.Color.set(1)
                     self.who_is_playing()
+            # for i in self.possible_moves(self.Color.get()):########    1
+            #             pos = self.conv_pos(i)
+            #             my_label = self.boxes[pos[0]][pos[1]]
+                        
+            #             #my_label.pack(pady=20)
+
+            #             my_label.bind("<Enter>", self.change(pos[0],pos[1],self.boxes))
+            #             my_label.bind("<Leave>", self.change_back(pos[0],pos[1],self.boxes))
             self.Count_White = self.List_Boxes.count(1)
             self.Count_Black = self.List_Boxes.count(-1)
             self.check_win_condition()
