@@ -1,6 +1,6 @@
-num =0
-for i in range(6):
-    for j in range(6):
+num =6
+for i in range(num):
+    for j in range(num):
         if num<10:
             print(" ",end="")
         print("",num,end='')
