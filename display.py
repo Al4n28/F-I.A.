@@ -6,7 +6,7 @@ from csv import writer
 
 class UI_Reversi:
 
-    def __init__(self):
+    def __init__(self): #ventana principal, con todas las opciones disponibles
         self.Principal_Window = Tk()
         self.Principal_Window.title('Inicio')
         self.Principal_Window.geometry('500x500')
@@ -40,7 +40,7 @@ class UI_Reversi:
         # SE PUEDEN AGReGAR LAS DIFICULTADES PRINCIPIANTE (0) Y EXPERTO (4)
         self.difficulty = IntVar()
         self.difficulty.set(3) 
-        difficulty_levels =[('Principiante',1),('Fácil',2),('Normal',3),('Difícil',5),('Experto',10)]
+        difficulty_levels =[('Principiante',1),('Fácil',2),('Normal',3),('Difícil',5),('Experto',7)]
         for level, num in difficulty_levels:
             Radiobutton(self.Principal_Window,text=level,variable=self.difficulty,value=num).pack()
 
@@ -51,8 +51,8 @@ class UI_Reversi:
         Radiobutton(self.Principal_Window,text='8x8',variable=self.Board_Size,value=8).pack()
 
         Button(self.Principal_Window,text='INICIAR JUEGO',command=lambda:self.init_game()).pack(pady=10)
-
-    def init_game(self):
+    
+    def init_game(self): #ventana del juego, inicia tablero, crea los botones, asigna las imagenes iniciales, etc
         self.Game_Window = Toplevel()
         self.Game_Window.title("Reversi")
         #self.Game_Window.eval('tk::PlaceWindow . center')
@@ -134,7 +134,7 @@ class UI_Reversi:
             self.Color.set(-1)
             self.print_turn_color()
 
-    def minimax(self,Turn_Color,secuencia,secuencias,d): #r1=minimax(juego,1,[],o1)
+    def minimax(self,Turn_Color,secuencia,secuencias,d): #primer agente implementado que despues fue modificado, no esta en uso
         self.Expansions +=1
         # self.Board_List =self.List_Boxes
         #     Turn_Color = self.Color
@@ -203,7 +203,7 @@ class UI_Reversi:
         #print("v",v)
         return v
 
-    def alfabeta(self,Turn_Color,alfa,beta,secuencia,secuencias,d): #r1=minimax(juego,1,[],o1)
+    def alfabeta(self,Turn_Color,alfa,beta,secuencia,secuencias,d): #agente utilizado en el programa, utiliza una heuristica
         # self.Board_List =self.List_Boxes
         #     Turn_Color = self.Color
         self.Expansions +=1
@@ -288,7 +288,7 @@ class UI_Reversi:
         #print("v",v)
         return v 
     
-    def Utility_Funtion(self,Color):
+    def Utility_Funtion(self,Color): #funcion que retorna quien es el que gana en un estado final, retornando un "infinito"
         if self.Count_White>self.Count_Black:
             return 1000*Color
         elif self.Count_White<self.Count_Black:
@@ -296,13 +296,13 @@ class UI_Reversi:
         else:
             return 0
 
-    def Test_Final_State(self):
+    def Test_Final_State(self):# si el tablero esta lleno o ningun jugador tiene jugadas posibles
         if self.List_Boxes.count(0)==0 or ((len(self.possible_moves(self.List_Boxes,1))==0) and (len(self.possible_moves(self.List_Boxes,-1))==0)):
             return True
         else:
             return False
 
-    def Eval_Funtion(self,Color):
+    def Eval_Funtion(self,Color):#heuristica, dice por cuantas fichas va ganando el jugador y el "puntaje" con que va ganando
         self.Eval_Num=0
         for i in range(len(self.List_Boxes)):
             if self.List_Boxes[i] ==0:
@@ -316,7 +316,7 @@ class UI_Reversi:
         #print(self.Eval_Num)
         return self.Eval_Num*Color
     
-    def recursive_look(self,pos,dir,color):
+    def recursive_look(self,pos,dir,color):#funcion que busca recursivamente en la direccion "dir" que se le de, retorna si puedo comer o no puedo comer en dicha direccion
         if ((pos+dir)>=0) and ((pos+dir)<=((self.Board_Size.get()**2)-1)):
             if (pos+dir) in self.Edge_Positions:
                 if self.List_Boxes[pos+dir]==color:
@@ -340,7 +340,7 @@ class UI_Reversi:
             #print('OUT OF RANGE LOOK')
             return -1
         
-    def possible_moves(self,l,color):
+    def possible_moves(self,l,color):#calcula las posibles jugadas de cada ficha del color dado, en todas las direcciones disponibles
         possible_moves_list=[]
         for i in list(np.where(np.array(l) == color)[0]):
              for j in self.Edge_Exceptions(i):
@@ -356,7 +356,7 @@ class UI_Reversi:
                         continue
         return sorted(possible_moves_list)
 
-    def recursive_color(self,pos,dir,color):
+    def recursive_color(self,pos,dir,color):#funcion que retorna una lista con todas las fichas que se tienen que comer para una determinada jugada
         if ((pos+dir)>=0) and ((pos+dir)<=((self.Board_Size.get()**2)-1)):
             if (pos+dir) in self.Edge_Positions:
                 if self.List_Boxes[pos+dir]==0:
@@ -378,7 +378,7 @@ class UI_Reversi:
             #print('OUT OF RANGE COLOR')
             return [-1]
         
-    def change_color_List_Boxes(self,pos,color):
+    def change_color_List_Boxes(self,pos,color):#funcion que cambia los numeros en la lista de acuerdo a la posicion y direccion dada
         cc_list=[]
         for i in self.Edge_Exceptions(pos):
             if self.List_Boxes[pos+i]==0 or self.List_Boxes[pos+i]==color:
@@ -400,7 +400,7 @@ class UI_Reversi:
                     self.List_Boxes[i]=-1
         return cc_list
 
-    def change_color_Board_List(self,pos,color):
+    def change_color_Board_List(self,pos,color):#funcion que cambia los numeros en la lista duplicada a la original de acuerdo a la posicion y direccion dada hecha en la smulacion de jugadas de la IA
         cc_list=[]
         for i in self.Edge_Exceptions(pos):
             if self.Board_List[pos+i]==0 or self.Board_List[pos+i]==color:
@@ -422,7 +422,7 @@ class UI_Reversi:
                     self.Board_List[i]=-1
         return cc_list
 
-    def change_bottoms(self,l):
+    def change_bottoms(self,l):#funcion que cambia la imagen de los botones en la ventana de juego
         if len(l)!= 0:
             for i in l:
                 if self.Color.get()==1:
@@ -432,7 +432,7 @@ class UI_Reversi:
                     self.boxes[self.conv_pos(i)[0]][self.conv_pos(i)[1]].config(image=self.B_Piece)
                     self.List_Boxes[i]=-1
 
-    def one_vs_one(self,pos_play):
+    def one_vs_one(self,pos_play):#jugador contra jugador
         if self.Color.get()==1:
             if not self.possible_moves(self.List_Boxes,self.Color.get()):
                 print('BLANCAS NO TIENEN JUGADAS')
@@ -470,7 +470,7 @@ class UI_Reversi:
                     self.Color.set(1)
                     self.print_turn_color()
 
-    def one_vs_IA(self,pos_play):
+    def one_vs_IA(self,pos_play):#jugador contra IA
         if self.Color.get()==1:
             if not self.possible_moves(self.List_Boxes,self.Color.get()):
                 print('BLANCAS NO TIENEN JUGADAS')
@@ -497,7 +497,9 @@ class UI_Reversi:
             self.Expansions = -1
             inicio = time.time()
             sec=[]
+            
             IA_Play=self.alfabeta(self.Color.get(),-1000,1000,[],sec,0)[1]
+            
             #IA_Play=self.minimax(self.Color.get(),[],sec,0)[1]
             fin = time.time()
             self.Time_IA_Thinks=fin-inicio
@@ -551,7 +553,9 @@ class UI_Reversi:
             self.Expansions = -1
             inicio = time.time()
             sec=[]
+            
             IA_Play=self.alfabeta(self.Color.get(),-1000,1000,[],sec,0)[1]
+            
             #IA_Play=self.minimax(self.Color.get(),[],sec,0)[1]
             fin = time.time()
             self.Time_IA_Thinks=fin-inicio
@@ -581,7 +585,8 @@ class UI_Reversi:
                 self.print_turn_color()
         #print([(i,self.Eval_Funtion(self.Color.get())) for i in sec])
 
-    def click(self,event):
+    def click(self,event):#evento de click asignado a los botones
+        
         if self.List_Boxes[event.widget.x*self.Board_Size.get()+event.widget.y] ==0:
             print('JUGADA ---->  ', event.widget.x*self.Board_Size.get()+event.widget.y)
             if self.GameMode.get()==1:
@@ -592,21 +597,10 @@ class UI_Reversi:
             self.background()
             self.stickers()
             self.check_win_condition()
-            print("Eval: ",self.Eval_Funtion_bar())
-            # sec=[]
-            # self.Board_List =self.List_Boxes
-            # #Turn_Color = self.Color.get()
-            # self.who_plays=self.Color.get()
-            # #print("color entra minimax",self.Color.get())
-            # print("result: ",self.minimax(self.Color.get(),[],sec,0))
-           # print(sec)
             
-
-    
-
     ## ------------------------------------------------------------------------------------------------------------------------------------------
         #                     UI
-    def background(self):
+    def background(self):#funcion que rellena los espacios de la ventana del juego con un color
         rellenos= Label(self.Game_Window,bg="#E67E22")
         rellenos.place(width=100000, height=35)
 
@@ -616,9 +610,7 @@ class UI_Reversi:
             rellenoli= Label(self.Game_Window,bg="#E67E22")
             rellenoli.place(x=0, y=0,width=20, height=10000)
             rellenold= Label(self.Game_Window,bg="#E67E22")
-            rellenold.place(x=535, y=0,width=10000, height=10000)
-            w = Button (self.Game_Window, text="JUGADA RECOMENDADA")
-            w.place(x=200,y=560)
+            rellenold.place(x=535, y=0,width=10000, height=10000)       
         
         else:
             rellenoi= Label(self.Game_Window,bg="#E67E22")
@@ -626,11 +618,9 @@ class UI_Reversi:
             rellenoli= Label(self.Game_Window,bg="#E67E22")
             rellenoli.place(x=0, y=0,width=20, height=10000)
             rellenold= Label(self.Game_Window,bg="#E67E22")
-            rellenold.place(x=705, y=0,width=10000, height=10000)
-            w = Button (self.Game_Window, text="JUGADA RECOMENDADA")
-            w.place(x=290,y=730)         
+            rellenold.place(x=705, y=0,width=10000, height=10000)      
 
-    def stickers(self):
+    def stickers(self):#funcion que dice cuantas fichas tiene cada jugador y esta jugando
         etiqueta= Label(self.Game_Window,text="piezas Blancas: " + str(self.List_Boxes.count(1)),fg="black")
         etiqueta.place(x=20, y=0, width=100, height=35)
         etiqueta= Label(self.Game_Window,text="piezas Negras: " + str(self.List_Boxes.count(-1)),bg="#E67E22",fg="white")
@@ -654,21 +644,7 @@ class UI_Reversi:
                 etiquetaturno= Label(self.Game_Window,text="Turno: NEGRAS",bg="#E67E22",fg="white")
                 etiquetaturno.place(x=605, y=0, width=100, height=35)
 
-    def Eval_Funtion_bar(self):
-        self.Eval_Num=0
-        for i in range(len(self.List_Boxes)):
-            if self.List_Boxes[i] ==0:
-                continue
-            if i in self.Corners:
-                self.Eval_Num += self.List_Boxes[i]*3
-            if i in (self.Top_Egde or self.Bottom_Egde or self.Left_Edge or self.Right_Egde):
-                self.Eval_Num += self.List_Boxes[i]*2
-            else:
-                self.Eval_Num += self.List_Boxes[i]
-        #print(self.Eval_Num)
-        return self.Eval_Num
-
-    def check_win_condition(self):
+    def check_win_condition(self):#funcion que dice quien es el ganador
         if self.List_Boxes.count(0)==0:
             if self.Count_White>self.Count_Black:
                 messagebox.showinfo("REVERSI", "GANAN LAS BLANCAS!")
@@ -677,7 +653,7 @@ class UI_Reversi:
             else:
                 messagebox.showinfo("REVERSI", "EMPATE!")
 
-    def def_pos(self):
+    def def_pos(self):#funcion que define la cantidad de posiciones para moverse en la lista para cada una de las 8 direcciones posibles
         # 8 posiciones
         self.izq=-1
         self.der=1
@@ -688,7 +664,7 @@ class UI_Reversi:
         self.dda=-1*(self.Board_Size.get()-1) #diagonal derecha arriba
         self.ddb=self.Board_Size.get()+1 #diagonal derecha abajo
 
-    def grid_edge(self):
+    def grid_edge(self):#borde del grid para la ventana del tablero
         Top_Egde_grid = [i for i in range(1,(self.Board_Size.get()+2)-1)]
         Bottom_Egde_grid = [i for i in range((self.Board_Size.get()+2)*((self.Board_Size.get()+2)-1)+1,((self.Board_Size.get()+2)**2)-1)]
         Left_Edge_grid = [i for i in range((self.Board_Size.get()+2),(self.Board_Size.get()+2)*((self.Board_Size.get()+2)-1),(self.Board_Size.get()+2))]
@@ -696,7 +672,7 @@ class UI_Reversi:
         Corners_grid = [0]+[(self.Board_Size.get()+2)-1]+[((self.Board_Size.get()+2)-1)*(self.Board_Size.get()+2)]+[((self.Board_Size.get()+2)**2)-1]
         self.Edge_Positions_grid = Top_Egde_grid+Bottom_Egde_grid+Left_Edge_grid+Right_Egde_grid+Corners_grid
 
-    def def_edge(self):
+    def def_edge(self):#borde del grid del tablero de juego
         self.Top_Egde = [i for i in range(1,self.Board_Size.get()-1)]
         self.Bottom_Egde = [i for i in range(self.Board_Size.get()*(self.Board_Size.get()-1)+1,(self.Board_Size.get()**2)-1)]
         self.Left_Edge = [i for i in range(self.Board_Size.get(),self.Board_Size.get()*(self.Board_Size.get()-1),self.Board_Size.get())]
@@ -704,7 +680,7 @@ class UI_Reversi:
         self.Corners = [0]+[self.Board_Size.get()-1]+[(self.Board_Size.get()-1)*self.Board_Size.get()]+[(self.Board_Size.get()**2)-1]
         self.Edge_Positions = self.Corners+self.Top_Egde+self.Left_Edge+self.Right_Egde+self.Bottom_Egde
 
-    def Edge_Exceptions(self,pos):
+    def Edge_Exceptions(self,pos):#direcciones que se pueden revisar para las casillas, para una casilla interior se pueden revisar las 8 direcciones pero para el borde superior no se pueden revisar hacia arriba
          #LAS 8 EXCEPCIONES
         if pos == 0: #First_Corner
             return [self.der,self.ddb,self.aba]
@@ -725,10 +701,10 @@ class UI_Reversi:
         else:
             return [self.dia,self.arr,self.dda,self.der,self.ddb,self.aba,self.dib,self.izq]
 
-    def conv_pos(self,pos):
+    def conv_pos(self,pos):#funcion que transforma una posicion de la lista a una posicion de la matriz
         return[pos//self.Board_Size.get(),pos%self.Board_Size.get()]
 
-    def print_turn_color(self):
+    def print_turn_color(self):#funcion que imprime los datos en la consola
         if self.Color.get()==1:
             print('JUEGAN LAS BLANCAS')
             self.printListBoxes(self.List_Boxes)
@@ -738,7 +714,7 @@ class UI_Reversi:
             self.printListBoxes(self.List_Boxes)
             print(self.possible_moves(self.List_Boxes,self.Color.get())) 
 
-    def printListBoxes(self,l):
+    def printListBoxes(self,l):#funcion que imprime el tablero en consola
         for i in range(self.Board_Size.get()):
             for j in range(self.Board_Size.get()):
                 if l[i*self.Board_Size.get()+j]>=0:
@@ -746,12 +722,12 @@ class UI_Reversi:
                 print(l[i*self.Board_Size.get()+j],end=' ')
             print()
 
-    def select_move_in(self,event):
+    def select_move_in(self,event):#evento para que una casilla con jugada posible resalte cuando se coloca el cursor sobre el boton de dicha jugada
         if event.widget.x*self.Board_Size.get()+event.widget.y in self.possible_moves(self.List_Boxes,self.Color.get()):
             self.boxes[self.conv_pos(event.widget.x*self.Board_Size.get()+event.widget.y)[0]][self.conv_pos(event.widget.x*self.Board_Size.get()+event.widget.y)[1]].config(image=self.Full_Space)        #matriz[x][y].config(image=my_pic)
             self.boxes[self.conv_pos(event.widget.x*self.Board_Size.get()+event.widget.y)[0]][self.conv_pos(event.widget.x*self.Board_Size.get()+event.widget.y)[1]].image=self.Full_Space
 
-    def select_move_out(self,event):
+    def select_move_out(self,event):#evento para que una casilla resaltada por la funcion select_move_in vuelva a la normalidad cuando el cursor sale del boton
         if event.widget.x*self.Board_Size.get()+event.widget.y in self.possible_moves(self.List_Boxes,self.Color.get()):
             self.boxes[self.conv_pos(event.widget.x*self.Board_Size.get()+event.widget.y)[0]][self.conv_pos(event.widget.x*self.Board_Size.get()+event.widget.y)[1]].config(image=self.Empty_space)        #matriz[x][y].config(image=my_pic)
             self.boxes[self.conv_pos(event.widget.x*self.Board_Size.get()+event.widget.y)[0]][self.conv_pos(event.widget.x*self.Board_Size.get()+event.widget.y)[1]].image=self.Empty_space

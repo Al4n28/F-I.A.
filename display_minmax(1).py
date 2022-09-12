@@ -1,3 +1,4 @@
+from contextlib import ContextDecorator
 from tkinter import *
 from tkinter import messagebox
 import numpy as np
@@ -14,8 +15,10 @@ class UI_Reversi:
         # 0: para vacio
         # 1: para BLANCAS
         # -1: para NEGRAS
+        #turno=1
         self.Color =IntVar()
         self.Color.set(1)
+        #self.Color=turno
         Radiobutton(self.Principal_Window,text='BLANCAS',variable=self.Color,value=1).pack()
         Radiobutton(self.Principal_Window,text='NEGRAS',variable=self.Color,value=-1).pack()
         Label(self.Principal_Window,text='Seleccione color: ').pack()
@@ -35,9 +38,10 @@ class UI_Reversi:
         Radiobutton(self.Principal_Window,text='1vs1',variable=self.GameMode,value=1).pack()
         Label(self.Principal_Window,text='Seleccione dificultad: ').pack()
         # SE PUEDEN AGReGAR LAS DIFICULTADES PRINCIPIANTE (0) Y EXPERTO (4)
-        self.difficulty = StringVar()
-        self.difficulty.set('1')
-        difficulty_levels =[('Fácil','1'),('Normal','2'),('Difícil','3')]
+        self.difficulty = IntVar()
+        self.difficulty.set(3)
+        difficulty_levels =[('Fácil',1),('Normal',3),('Difícil',5)]
+        self.array_difi=[1,6,10]
         for level, num in difficulty_levels:
             Radiobutton(self.Principal_Window,text=level,variable=self.difficulty,value=num).pack()
 
@@ -46,6 +50,9 @@ class UI_Reversi:
         self.Board_Size.set(6)
         Radiobutton(self.Principal_Window,text='6x6',variable=self.Board_Size,value=6).pack()
         Radiobutton(self.Principal_Window,text='8x8',variable=self.Board_Size,value=8).pack()
+
+        self.winner=None
+        self.complete=False
 
         Button(self.Principal_Window,text='INICIAR JUEGO',command=lambda:self.init_game()).pack(pady=10)
 
@@ -62,7 +69,7 @@ class UI_Reversi:
         self.def_pos()
         self.def_edge()
         self.grid_edge()
-        self.Space=PhotoImage(file="space.gif")
+        #self.Space=PhotoImage(file="space.gif")
         if self.Theme.get() ==0:
             self.B_Piece=PhotoImage(file="black_piece.gif")
             self.W_Piece=PhotoImage(file="white_piece.gif")
@@ -108,74 +115,88 @@ class UI_Reversi:
         self.who_is_playing()
         #print(self.Edge_Positions)
 
-    def Eval_(self):
-        self.Eval_Funtion=0
-        for i in range(len(self.List_Boxes)):
-            if self.List_Boxes[i] ==0:
-                continue
-            if i in self.Corners:
-                self.Eval_Funtion += self.List_Boxes[i]*3
-            if i in (self.Top_Egde or self.Bottom_Egde or self.Left_Edge or self.Right_Egde):
-                self.Eval_Funtion += self.List_Boxes[i]*2
-            else:
-                self.Eval_Funtion += self.List_Boxes[i]
-        print("eval --> ",self.Eval_Funtion)
 
-    def alfabeta(self,alfa,beta,secuencia,secuencias):
-        #self.List_boxes_to_play =self.List_Boxes
-        if self.check_win_condition():
-            secuencias.append(secuencia.copy())
-            return [self.Utility_Funtion()]
-        if self.Color.get()==1:
-            valor=[-1000,None]
-        else:
-            valor=[1000,None]
-        jugadas_posibles=self.possible_moves(self.Color.get())
-        print(self.Color.get(),jugadas_posibles,secuencia)
-        self.printListBoxes()
-        if not jugadas_posibles:
-            self.Color.set(self.Color.get()*-1)
-        else:
-            for jugada in jugadas_posibles:
-                self.List_Boxes[jugada]= self.Color.get()
-                cc_list =self.change_color(jugada,self.Color.get())
-                self.change_color_list_Boxes(cc_list)
-                self.Color.set(self.Color.get()*-1)
-                secuencia.append(jugada)
-                opcion=self.alfabeta(alfa,beta,secuencia,secuencias)
-                print(jugada,opcion,valor)
-                if opcion != None:
-                    if self.Color.get()==1:
-                        if opcion[0]>valor[0]:
-                            valor=[opcion[0],jugada]
-                            alfa=max(alfa,valor[0])
-                        if valor[0]>=beta:
-                            self.List_Boxes[jugada]= 0
-                            for i in cc_list:
-                                self.List_Boxes[i]= 0
-                            self.Color.set(self.Color.get()*-1)
-                            secuencia.pop()
-                            break
-                    else:
-                        if opcion[0]<valor[0]:
-                            valor=[opcion[0],jugada]
-                            beta=min(beta,valor[0])
-                        if valor[0]<=alfa:
-                            self.List_Boxes[jugada]= 0
-                            for i in cc_list:
-                                self.List_Boxes[i]= 0
-                            self.Color.set(self.Color.get()*-1)
-                            secuencia.pop()
-                            break
-                self.List_Boxes[jugada]= 0
-                for i in cc_list:
-                            self.List_Boxes[i]= 0
-                self.Color.set(self.Color.get()*-1)
-                secuencia.pop()
+
+
+
+
+    #def MiniMax(self,color):
+
+
+    #     def max(color):
+    #         global contador
+    #         contador+=1
+    #         if self.difficulty==contador:
+    #             return self.
+
+    # def Eval_(self):
+    #     self.Eval_Funtion=0
+    #     for i in range(len(self.List_Boxes)):
+    #         if self.List_Boxes[i] ==0:
+    #             continue
+    #         if i in self.Corners:
+    #             self.Eval_Funtion += self.List_Boxes[i]*3
+    #         if i in (self.Top_Egde or self.Bottom_Egde or self.Left_Edge or self.Right_Egde):
+    #             self.Eval_Funtion += self.List_Boxes[i]*2
+    #         else:
+    #             self.Eval_Funtion += self.List_Boxes[i]
+    #     print("eval --> ",self.Eval_Funtion)
+
+    # def alfabeta(self,alfa,beta,secuencia,secuencias):
+    #     #self.List_boxes_to_play =self.List_Boxes
+    #     if self.check_win_condition():
+    #         secuencias.append(secuencia.copy())
+    #         return [self.Utility_Funtion()]
+    #     if self.Color.get()==1:
+    #         valor=[-1000,None]
+    #     else:
+    #         valor=[1000,None]
+    #     jugadas_posibles=self.possible_moves(self.Color.get())
+    #     print(self.Color.get(),jugadas_posibles,secuencia)
+    #     self.printListBoxes()
+    #     if not jugadas_posibles:
+    #         self.Color.set(self.Color.get()*-1)
+    #     else:
+    #         for jugada in jugadas_posibles:
+    #             self.List_Boxes[jugada]= self.Color.get()
+    #             cc_list =self.change_color(jugada,self.Color.get())
+    #             self.change_color_list_Boxes(cc_list)
+    #             self.Color.set(self.Color.get()*-1)
+    #             secuencia.append(jugada)
+    #             opcion=self.alfabeta(alfa,beta,secuencia,secuencias)
+    #             print(jugada,opcion,valor)
+    #             if opcion != None:
+    #                 if self.Color.get()==1:
+    #                     if opcion[0]>valor[0]:
+    #                         valor=[opcion[0],jugada]
+    #                         alfa=max(alfa,valor[0])
+    #                     if valor[0]>=beta:
+    #                         self.List_Boxes[jugada]= 0
+    #                         for i in cc_list:
+    #                             self.List_Boxes[i]= 0
+    #                         self.Color.set(self.Color.get()*-1)
+    #                         secuencia.pop()
+    #                         break
+    #                 else:
+    #                     if opcion[0]<valor[0]:
+    #                         valor=[opcion[0],jugada]
+    #                         beta=min(beta,valor[0])
+    #                     if valor[0]<=alfa:
+    #                         self.List_Boxes[jugada]= 0
+    #                         for i in cc_list:
+    #                             self.List_Boxes[i]= 0
+    #                         self.Color.set(self.Color.get()*-1)
+    #                         secuencia.pop()
+    #                         break
+    #             self.List_Boxes[jugada]= 0
+    #             for i in cc_list:
+    #                         self.List_Boxes[i]= 0
+    #             self.Color.set(self.Color.get()*-1)
+    #             secuencia.pop()
         
             
-        print(valor)
-        # return valor
+    #     print(valor)
+    #     return valor
 
     def who_is_playing(self):
         # etiqueta= Label(self.Game_Window,text="piezas Blancas: " + str(self.List_Boxes.count(1)))
@@ -185,11 +206,11 @@ class UI_Reversi:
         if self.Color.get()==1:
             print('JUEGAN LAS BLANCAS')
             self.printListBoxes()
-            print(self.possible_moves(self.Color.get()))     
+            print(self.possible_moves(self.Color.get(),self.List_Boxes))     
         else:
             print('JUEGAN LAS NEGRAS')
             self.printListBoxes()
-            print(self.possible_moves(self.Color.get())) 
+            print(self.possible_moves(self.Color.get(),self.List_Boxes))
 
     def def_pos(self):
         # 8 posiciones
@@ -266,13 +287,13 @@ class UI_Reversi:
             #print('OUT OF RANGE LOOK')
             return -1
         
-    def possible_moves(self,color):
+    def possible_moves(self,color,List_Boxes):
         possible_moves_list=[]
-        for i in list(np.where(np.array(self.List_Boxes) == color)[0]):
+        for i in list(np.where(np.array(List_Boxes) == color)[0]):
              for j in self.Edge_Exceptions(i):
                 if (i+j) in self.Edge_Positions and j not in self.Edge_Exceptions(i+j):
                     continue
-                elif self.List_Boxes[i+j]==0 or self.List_Boxes[i+j]==color:#or (i+j) in self.Edge_Positions:
+                elif List_Boxes[i+j]==0 or List_Boxes[i+j]==color:#or (i+j) in self.Edge_Positions:
                     continue
                 else:
                     pm=self.recursive_look(i+j,j,color)
@@ -304,10 +325,11 @@ class UI_Reversi:
             #print('OUT OF RANGE COLOR')
             return [-1]
         
-    def change_color(self,pos,color):
+    def change_color(self,pos,color,List_Boxes):
         cc_list=[]
         for i in self.Edge_Exceptions(pos):
-            if self.List_Boxes[pos+i]==0 or self.List_Boxes[pos+i]==color:
+            
+            if List_Boxes[pos+i]==0 or List_Boxes[pos+i]==color:
                 continue
             else:
                 if i not in self.Edge_Exceptions(pos+i):
@@ -322,15 +344,18 @@ class UI_Reversi:
         print(cc_list)
         return cc_list
         
-    def change_color_list_Boxes(self,l):
+    def change_color_list_Boxes(self,l,List_Boxes):
+        
         if len(l)!= 0:
             for i in l:
                 if self.Color.get()==1:
                     #self.boxes[self.conv_pos(i)[0]][self.conv_pos(i)[1]].config(image=self.W_Piece)
-                    self.List_Boxes[i]=1
+                    List_Boxes[i]=1
                 else:
                     #self.boxes[self.conv_pos(i)[0]][self.conv_pos(i)[1]].config(image=self.B_Piece)
-                    self.List_Boxes[i]=-1
+                    List_Boxes[i]=-1
+        
+
     def change_bottoms(self,l):
         if len(l)!= 0:
             for i in l:
@@ -340,66 +365,237 @@ class UI_Reversi:
                 else:
                     self.boxes[self.conv_pos(i)[0]][self.conv_pos(i)[1]].config(image=self.B_Piece)
                     #self.List_Boxes[i]=-1
+    # def check_win_condition(self):
+    #     if self.List_Boxes.count(0)==0 or ((len(self.possible_moves(1))==0) and (len(self.possible_moves(-1))==0)):
+    #         self.Utility_Funtion()
+    #         return True
+    #     else:
+    #         return False
+
+    # def Utility_Funtion(self):
+    #     if self.Count_White>self.Count_Black:
+    #         messagebox.showinfo("REVERSI", "GANAN LAS BLANCAS!")
+    #         return True
+    #     elif self.Count_White<self.Count_Black:
+    #         messagebox.showinfo("REVERSI", "GANAN LAS NEGRAS!")
+    #         return False
+    #     else:
+    #         messagebox.showinfo("REVERSI", "EMPATE!")
+    #         return 0
+
+
+
+    def Utility_Funtion(self):
+        if self.Count_White>self.Count_Black:
+            return 1
+        elif self.Count_White<self.Count_Black:
+            return -1
+        else:
+            return 0
+
+    def check_win_condition(self,color):
+
+        if self.contar == color:
+            return True
+        else:
+            return False
+        
+        # if self.List_Boxes.count(0)==0 or ((len(self.possible_moves(1))==0) and (len(self.possible_moves(-1))==0)):
+        #     self.Utility_Funtion()
+        #     return True
+        # else:
+        #     return False
+
+    # def estado_final(self):
+    #     self.evaluar()
+    #     if self.winner is not None or self.complete:
+    #         return True
+    #     else:
+    #         return False
+
+    # def evaluar(self):
+    #     if 0 not in self.List_Boxes:
+    #         self.complete=True
+    #     else:
+    #         self.complete=False
+    #         estado=[]
+    #     if int(self.Board_Size.get()) == 6:
+    #         for i in [0,6,12,18,24,30]:
+    #             estado.append(sum(self.List_Boxes[i:i+6]))
+    #         for i in [0,1,2,3,4,5]:
+    #             estado.append(self.List_Boxes[i]+self.List_Boxes[i+6]+self.List_Boxes[i+12]+self.List_Boxes[i+18]+self.List_Boxes[i+24]+self.List_Boxes[i+30])
+    #             estado.append(self.List_Boxes[0]+self.List_Boxes[7]+self.List_Boxes[14]+self.List_Boxes[21]+self.List_Boxes[28]+self.List_Boxes[35])
+    #             estado.append(self.List_Boxes[5]+self.List_Boxes[10]+self.List_Boxes[15]+self.List_Boxes[20]+self.List_Boxes[25]+self.List_Boxes[30])
+    #     else:
+    #         for i in [0,8,16,24,32,40,48,56]:
+    #             estado.append(sum(self.List_Boxes[i:i+8]))
+    #         for i in [0,1,2,3,4,5,6,7]:
+    #             estado.append(self.List_Boxes[i]+self.List_Boxes[i+8]+self.List_Boxes[i+16]+self.List_Boxes[i+24]+self.List_Boxes[i+32]+self.List_Boxes[i+40]+self.List_Boxes[i+48]+self.List_Boxes[i+56])
+    #             estado.append(self.List_Boxes[0]+self.List_Boxes[9]+self.List_Boxes[18]+self.List_Boxes[27]+self.List_Boxes[36]+self.List_Boxes[45]+self.List_Boxes[54]+self.List_Boxes[63])
+    #             estado.append(self.List_Boxes[7]+self.List_Boxes[14]+self.List_Boxes[21]+self.List_Boxes[28]+self.List_Boxes[35]+self.List_Boxes[42]+self.List_Boxes[49]+self.List_Boxes[56])
+    #     for valor in estado:
+    #         if valor==3 or valor==-3:
+    #             self.winner=valor//3
+    #             return
+    #     if self.complete:
+    #         self.winner=0
+    #     else:
+    #         self.winner=None
+
+    def contar(self):
+        blanca=self.List_Boxes.count(1)
+        negra=self.List_Boxes.count(-1)
+        if blanca > negra:
+            self.winner.set(1)
+            return 1
+        else:
+            if blanca < negra:
+                self.winner.set(-1)
+                return -1
+            else:
+                self.winner.set(0)
+                return 0
+
+    def calcular_utilidad(self):
+        return self.winner
+
+    def jugar(self,jugada):
+        self.List_Boxes[jugada]=self.Color.get()
+        #self.Color.set(self.Color.get()*-1)
+
+    def deshacer_jugada(self,jugada,cc_list):       
+        self.List_Boxes[jugada]=0
+        #self.Color.set(self.Color.get()*-1)
+
+    def cambiar(self,pos):
+        print("Entro con", pos)
+        aux=self.conv_pos(pos)
+        if self.Color.get()==1:
+            self.boxes[aux[0]][aux[1]].config(image=self.W_Piece)
+            #self.List_Boxes[i]=1
+        if self.Color.get()==-1:
+            self.boxes[aux[0]][aux[1]].config(image=self.B_Piece)
+
+        # cc_list=self.change_color(pos,self.Color.get())
+        # self.change_color_list_Boxes(cc_list)
+        # self.change_bottoms(cc_list)
+        
+        # for i in self.List_Boxes:
+        #     aux=self.conv_pos(i)
+        #     if self.Color.get()==1:
+        #         self.boxes[aux[0]][aux[1]].config(image=self.W_Piece)
+        #         #self.List_Boxes[i]=1
+        #     if self.Color.get()==-1:
+        #         self.boxes[aux[0]][aux[1]].config(image=self.B_Piece)
+
+    def minimax(self,etapa,secuencia,secuencias,contador1,List_Boxes2):
+        print("_____________________________________") 
+        if self.check_win_condition(self.Color.get()):
+            secuencias.append(secuencia.copy())
+            #print("aaaaaaa",secuencias)
+            return [self.calcular_utilidad()]
+        if int(self.Color.get())==1:
+            #print("Entra")
+            valor=[-1000,None]
+        else:
+            valor=[1000,None]
+        #print(contador)
+        if contador1<int(self.difficulty.get()):
+            print("calcula las jugadas posibles para ", self.Color.get())
+            jugadas_posibles = self.possible_moves(self.Color.get(),List_Boxes2)
+            for jugada in jugadas_posibles:
+                print("=======================")
+                print("llamada con la jugada", jugada, " del turno ", self.Color.get())
+                self.jugar(jugada)
+                #self.List_Boxes[jugada]= self.Color.get()
+                cc_list =self.change_color(jugada,self.Color.get(),List_Boxes2)
+                #print("CC",cc_list)
+                self.change_color_list_Boxes(cc_list,List_Boxes2)
+                self.Color.set(self.Color.get()*-1)
+
+                secuencia.append(jugada)
+                print(self.Color.get(),jugadas_posibles,secuencia)
+                self.printListBoxes()
+                
+                opcion=self.minimax(etapa*-1,secuencia,secuencias,contador1+1,List_Boxes2)
+                #maximizar
+                if etapa==1:
+                    if valor[0]<opcion[0]:
+                        valor=[opcion[0],jugada]                    
+                else:
+                #minimizar
+                    if valor[0]>opcion[0]:
+                        valor=[opcion[0],jugada]      
+                self.deshacer_jugada(jugada,cc_list)
+                for i in cc_list:
+                    List_Boxes2[i]= self.Color.get()
+                self.Color.set(self.Color.get()*-1)
+                # self.List_Boxes[jugada]= 0
+                # self.Color.set(self.Color.get()*-1)
+                secuencia.pop()
+                print("=======================")
+                print("Secuencia:", secuencia)
+                print("VALOR1: ",valor)
+            #self.cambiar(valor[1])
+            print("VALOR[1]", valor[1])     
+            return valor
+        else:
+            contador1=0
+            #print("VALOR2: ",valor)
+            return valor 
                
     def click(self,event):
+        
         if self.List_Boxes[event.widget.x*self.Board_Size.get()+event.widget.y] ==0:
             print('JUGADA ---->  ', event.widget.x*self.Board_Size.get()+event.widget.y)
             if self.Color.get()==1:
-                if not self.possible_moves(self.Color.get()):
+                if not self.possible_moves(self.Color.get(),self.List_Boxes):
                     print('BLANCAS NO TIENEN JUGADAS')
                     self.Color.set(-1)
                     self.who_is_playing()
-                elif event.widget.x*self.Board_Size.get()+event.widget.y not in self.possible_moves(self.Color.get()):
+                elif event.widget.x*self.Board_Size.get()+event.widget.y not in self.possible_moves(self.Color.get(),self.List_Boxes):
                     print('JUGADA INVALIDA')
-                    print(self.possible_moves(self.Color.get()))# crear metodo para que no calcule de nuevo todo
-                elif event.widget.x*self.Board_Size.get()+event.widget.y in self.possible_moves(self.Color.get()):
-                    cc_list =self.change_color(event.widget.x*self.Board_Size.get()+event.widget.y,self.Color.get())
+                    print(self.possible_moves(self.Color.get(),self.List_Boxes))# crear metodo para que no calcule de nuevo todo
+                elif event.widget.x*self.Board_Size.get()+event.widget.y in self.possible_moves(self.Color.get(),self.List_Boxes):
+                    cc_list =self.change_color(event.widget.x*self.Board_Size.get()+event.widget.y,self.Color.get(),self.List_Boxes)
                     self.change_bottoms(cc_list)
-                    self.change_color_list_Boxes(cc_list)
+                    self.change_color_list_Boxes(cc_list,self.List_Boxes)
                     event.widget['image'] = self.W_Piece
                     self.List_Boxes[event.widget.x*self.Board_Size.get()+event.widget.y]=1
                     self.Color.set(-1)
                     self.who_is_playing()
+            #elif self.Color.get()==-1:
             else:
-                if not self.possible_moves(self.Color.get()):
+                if not self.possible_moves(self.Color.get(),self.List_Boxes):
                     print('NEGRAS NO TIENEN JUGADAS')
                     self.Color.set(1)
                     self.who_is_playing()
-                elif event.widget.x*self.Board_Size.get()+event.widget.y not in self.possible_moves(self.Color.get()):
+                elif event.widget.x*self.Board_Size.get()+event.widget.y not in self.possible_moves(self.Color.get(),self.List_Boxes):
                     print('JUGADA INVALIDA N')
-                    print(self.possible_moves(self.Color.get()))
-                elif event.widget.x*self.Board_Size.get()+event.widget.y in self.possible_moves(self.Color.get()):
-                    cc_list=self.change_color(event.widget.x*self.Board_Size.get()+event.widget.y,self.Color.get())
+                    print(self.possible_moves(self.Color.get(),self.List_Boxes))
+                elif event.widget.x*self.Board_Size.get()+event.widget.y in self.possible_moves(self.Color.get(),self.List_Boxes):
+                    cc_list=self.change_color(event.widget.x*self.Board_Size.get()+event.widget.y,self.Color.get(),self.List_Boxes)
                     self.change_bottoms(cc_list)
-                    self.change_color_list_Boxes(cc_list)
+                    self.change_color_list_Boxes(cc_list,self.List_Boxes)
                     event.widget['image'] = self.B_Piece
                     self.List_Boxes[event.widget.x*self.Board_Size.get()+event.widget.y]=-1
                     self.Color.set(1)
                     self.who_is_playing()
             self.Count_White = self.List_Boxes.count(1)
             self.Count_Black = self.List_Boxes.count(-1)
-            self.check_win_condition()
-            self.Eval_()
-            
-            #self.alfabeta(-1000,1000,[],[])
-
-    def Utility_Funtion(self):
-        if self.Count_White>self.Count_Black:
-            messagebox.showinfo("REVERSI", "GANAN LAS BLANCAS!")
-            return 1
-        elif self.Count_White<self.Count_Black:
-            messagebox.showinfo("REVERSI", "GANAN LAS NEGRAS!")
-            return -1
-        else:
-            messagebox.showinfo("REVERSI", "EMPATE!")
-            return 0
-
-    def check_win_condition(self):
-        if self.List_Boxes.count(0)==0 or ((len(self.possible_moves(1))==0) and (len(self.possible_moves(-1))==0)):
-            self.Utility_Funtion()
-            return True
-        else:
-            return False
+            self.check_win_condition(self.Color.get())
+            #self.Eval_()
+            print("llamada minimax", self.Color.get())
+            self.List_Boxes2=self.List_Boxes
+            print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",self.minimax(self.Color.get(),[],[],0,self.List_Boxes2))
+            if self.minimax(self.Color.get(),[],[],0,self.List_Boxes2)[1]!=None:
+                self.cambiar(self.minimax(self.Color.get(),[],[],0,self.List_Boxes2)[1])
+                cc_list=self.change_color(self.minimax(self.Color.get(),[],[],0,self.List_Boxes2)[1],self.Color.get(),self.List_Boxes)
+                self.change_bottoms(cc_list)
+                self.change_color_list_Boxes(cc_list,self.List_Boxes)
+                self.Color.set(self.Color.get()*-1)
+            else:
+                print("a")
 
     def printListBoxes(self):
         for i in range(self.Board_Size.get()):
